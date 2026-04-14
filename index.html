@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>喵星乐园</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+
+  :root {
+    --pink: #FF6B9D;
+    --pink-dark: #e8527f;
+    --mint: #4ECDC4;
+    --yellow: #FFE66D;
+    --purple: #C77DFF;
+    --sky: #74b9ff;
+    --bg: #FFF5F8;
+    --card: #FFFFFF;
+    --text: #2D3436;
+    --text-light: #636E72;
+    --shadow: rgba(255, 107, 157, 0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Floating particles */
+  .particles {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .p {
+    position: absolute;
+    border-radius: 50%;
+    animation: float linear infinite;
+    opacity: 0.4;
+  }
+  @keyframes float {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.4; }
+    90% { opacity: 0.4; }
+    100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* Header */
+  header {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 32px 20px 16px;
+  }
+  header h1 {
+    font-family: 'ZCOOL KuaiLe', cursive;
+    font-size: 2.8rem;
+    color: var(--pink);
+    text-shadow: 3px 3px 0 var(--yellow), 5px 5px 0 rgba(0,0,0,0.1);
+    letter-spacing: 2px;
+  }
+  header p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  /* Parent mode button */
+  .parent-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 50;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(199, 125, 255, 0.4);
+    font-family: 'Noto Sans SC', sans-serif;
+  }
+  .parent-btn:hover { transform: scale(1.05); }
+
+  /* Main layout */
+  .container {
+    position: relative;
+    z-index: 10;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 16px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Card base */
+  .card {
+    background: var(--card);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 8px 32px var(--shadow);
+    border: 2px solid rgba(255,107,157,0.1);
+  }
+
+  /* Pet Stage */
+  .pet-stage {
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+  }
+  .pet-stage::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 200px; height: 40px;
+    background: radial-gradient(ellipse, rgba(78,205,196,0.3) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .pet-name-display {
+    font-family: 'ZCOOL KuaiLe', cursive;
+    font-size: 1.5rem;
+    color: var(--pink);
+    margin-bottom: 4px;
+  }
+  .pet-level-badge {
+    display: inline-block;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 16px;
+    transition: all 0.5s;
+  }
+
+  .pet-avatar {
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 16px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pet-emoji {
+    font-size: 140px;
+    line-height: 1;
+    animation: bounce 2s ease-in-out infinite;
+    transition: all 0.5s;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15));
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    25% { transform: translateY(-15px) scale(1.05); }
+    50% { transform: translateY(-5px) scale(0.98); }
+    75% { transform: translateY(-10px) scale(1.02); }
+  }
+  .pet-emoji.happy { animation: bounce 1s ease-in-out infinite; }
+  .pet-emoji.eating { animation: wiggle 0.5s ease-in-out infinite; }
+  .pet-emoji.sad { animation: shake 0.8s ease-in-out infinite; }
+  @keyframes wiggle {
+    0%,100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+
+  .pet-emoji.level-up {
+    animation: levelUp 1s ease-out forwards;
+  }
+  @keyframes levelUp {
+    0% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+    30% { transform: scale(1.4) rotate(-10deg); filter: brightness(1.5) drop-shadow(0 0 30px gold); }
+    60% { transform: scale(1.2) rotate(10deg); filter: brightness(1.3) drop-shadow(0 0 20px gold); }
+    100% { transform: scale(1) rotate(0deg); filter: brightness(1) drop-shadow(0 10px 20px rgba(0,0,0,0.15)); }
+  }
+
+  /* Hearts animation */
+  .hearts {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .heart {
+    position: absolute;
+    animation: heartFloat 1s ease-out forwards;
+    font-size: 24px;
+    opacity: 0;
+  }
+  @keyframes heartFloat {
+    0% { opacity: 1; transform: translateY(0) scale(0.5); }
+    100% { opacity: 0; transform: translateY(-80px) scale(1.2); }
+  }
+
+  /* Score display */
+  .score-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 12px;
+  }
+  .score-item {
+    text-align: center;
+  }
+  .score-label {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .score-value {
+    font-family: 'ZCOOL KuaiLe', cursive;
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-top: 4px;
+  }
+  .score-value.points { color: var(--pink); }
+  .score-value.exp { color: var(--mint); }
+  .score-divider {
+    width: 2px;
+    height: 40px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 2px;
+  }
+
+  /* Progress bar */
+  .exp-bar-wrap {
+    margin-top: 16px;
+    padding: 0 8px;
+  }
+  .exp-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .exp-bar {
+    height: 14px;
+    background: #f0f0f0;
+    border-radius: 7px;
+    overflow: hidden;
+    position: relative;
+  }
+  .exp-bar-fill {
+    height: 100%;
+    border-radius: 7px;
+    background: linear-gradient(90deg, var(--mint), var(--sky));
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    min-width: 0%;
+  }
+  .exp-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px;
+    height: 4px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 2px;
+  }
+
+  /* Quick actions */
+  .quick-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .qa-btn {
+    flex: 1;
+    padding: 10px 8px;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .qa-btn:active { transform: scale(0.95); }
+  .qa-btn.interact { background: linear-gradient(135deg, #ffeef8, #fff0f5); color: var(--pink); border: 2px solid rgba(255,107,157,0.3); }
+  .qa-btn.interact:hover { background: linear-gradient(135deg, #ffd6e7, #ffe0ec); border-color: var(--pink); box-shadow: 0 4px 15px rgba(255,107,157,0.3); transform: translateY(-2px); }
+  .qa-btn.interact:active { transform: scale(0.9); }
+  .qa-btn .qa-icon { font-size: 1.4rem; }
+
+  /* Section titles */
+  .section-title {
+    font-family: 'ZCOOL KuaiLe', cursive;
+    font-size: 1.15rem;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title .icon { font-size: 1.3rem; }
+
+  /* Custom rules panel */
+  .rule-list { display: flex; flex-direction: column; gap: 12px; }
+  .rule-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #fafafa;
+    border-radius: 14px;
+    border: 1.5px solid rgba(0,0,0,0.06);
+  }
+  .rule-item .rule-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .rule-item .rule-info { flex: 1; min-width: 0; }
+  .rule-item .rule-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .rule-item .rule-value {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+  .rule-item .rule-controls { display: flex; gap: 6px; }
+  .rule-ctrl-btn {
+    width: 28px; height: 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .rule-ctrl-btn:active { transform: scale(0.9); }
+  .rule-ctrl-btn.trigger { background: #e8f5e9; color: #2e7d32; }
+  .rule-ctrl-btn.edit { background: #e3f2fd; color: #1565c0; }
+  .rule-ctrl-btn.del { background: #ffebee; color: #c62828; }
+  .rule-value-badge {
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+  .badge-plus { background: var(--mint); }
+  .badge-minus { background: var(--pink); }
+
+  .add-rule-btn {
+    width: 100%;
+    padding: 12px;
+    border: 2px dashed rgba(255,107,157,0.4);
+    background: transparent;
+    border-radius: 14px;
+    color: var(--pink);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+    margin-top: 4px;
+  }
+  .add-rule-btn:hover { background: rgba(255,107,157,0.05); border-color: var(--pink); }
+
+  /* Level rules */
+  .level-list { display: flex; flex-direction: column; gap: 8px; }
+  .level-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: #fafafa;
+    border-radius: 12px;
+    border: 1.5px solid rgba(0,0,0,0.06);
+  }
+  .level-item .lv-badge {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    color: white;
+    font-weight: 700;
+  }
+  .level-item .lv-info { flex: 1; }
+  .level-item .lv-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .level-item .lv-threshold {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+  .level-item .lv-edit-btn {
+    padding: 4px 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    background: #f0f0f0;
+    color: var(--text);
+    font-family: 'Noto Sans SC', sans-serif;
+    transition: all 0.15s;
+  }
+  .level-item .lv-edit-btn:hover { background: var(--pink); color: white; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 24px;
+    padding: 28px;
+    width: 100%;
+    max-width: 360px;
+    animation: modalIn 0.3s ease-out;
+  }
+  @keyframes modalIn {
+    from { transform: scale(0.85) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  .modal h3 {
+    font-family: 'ZCOOL KuaiLe', cursive;
+    font-size: 1.3rem;
+    color: var(--pink);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .form-group input, .form-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-family: 'Noto Sans SC', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fafafa;
+  }
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--pink);
+    background: white;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .modal-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .modal-btn.cancel { background: #f0f0f0; color: var(--text); }
+  .modal-btn.save { background: linear-gradient(135deg, var(--pink), var(--purple)); color: white; }
+  .modal-btn:active { transform: scale(0.97); }
+
+  /* Notification toast */
+  .toast {
+    position: fixed;
+    top: 20px; left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: white;
+    padding: 12px 24px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    z-index: 200;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 90%;
+    text-align: center;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-left: 4px solid var(--mint); }
+  .toast.warn { border-left: 4px solid var(--yellow); }
+  .toast.upgrade { border-left: 4px solid var(--purple); animation: pulse 0.5s; }
+  @keyframes pulse { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-5px)} }
+
+  /* Pet Selector */
+  .pet-selector {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .pet-opt {
+    padding: 8px 4px;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 2rem;
+    transition: all 0.2s;
+    background: #fafafa;
+  }
+  .pet-opt:hover { border-color: var(--pink); background: #fff0f5; }
+  .pet-opt.selected { border-color: var(--pink); background: #fff0f5; box-shadow: 0 0 0 3px rgba(255,107,157,0.2); }
+
+  /* Color picker row */
+  .color-row { display: flex; gap: 8px; }
+  .color-opt {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .color-opt.selected { border-color: var(--text); transform: scale(1.15); }
+
+  /* Responsive */
+  @media (max-width: 400px) {
+    header h1 { font-size: 2rem; }
+    .pet-emoji { font-size: 110px; }
+    .pet-avatar { width: 140px; height: 140px; }
+  }
+
+  /* Level-up celebration */
+  .celebration-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 150;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .celebration-overlay.active { display: flex; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .celebration-title {
+    font-family: 'ZCOOL KuaiLe', cursive;
+    font-size: 2.5rem;
+    color: var(--yellow);
+    text-shadow: 2px 2px 0 var(--pink), 4px 4px 0 rgba(0,0,0,0.3);
+    margin-bottom: 16px;
+    animation: popIn 0.5s ease-out;
+  }
+  .celebration-emoji { font-size: 120px; animation: bounce 1s ease-in-out infinite; margin-bottom: 20px; }
+  .celebration-info {
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  .celebration-btn {
+    padding: 14px 32px;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 1rem;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(255,107,157,0.5);
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  /* Stars */
+  .star {
+    position: absolute;
+    animation: starBurst 1s ease-out forwards;
+    pointer-events: none;
+    font-size: 20px;
+  }
+  @keyframes starBurst {
+    0% { opacity: 1; transform: translate(0,0) scale(1) rotate(0deg); }
+    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0.5) rotate(360deg); }
+  }
+
+  /* Tab bar */
+  .tab-bar {
+    display: flex;
+    background: white;
+    border-radius: 20px;
+    padding: 4px;
+    box-shadow: 0 4px 20px var(--shadow);
+    margin-bottom: 4px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 8px;
+    border: none;
+    background: transparent;
+    border-radius: 16px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: white;
+    box-shadow: 0 4px 12px rgba(255,107,157,0.4);
+  }
+  .tab-btn .tab-icon { font-size: 1rem; }
+
+  /* Tab panels */
+  .tab-panels { display: flex; flex-direction: column; gap: 16px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Log panel */
+  .log-list { max-height: 300px; overflow-y: auto; }
+  .log-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #fafafa;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+  }
+  .log-item .log-time {
+    color: var(--text-light);
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+  .log-item .log-action { flex: 1; }
+  .log-item .log-points {
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .log-item .log-points.plus { color: var(--mint); }
+  .log-item .log-points.minus { color: var(--pink); }
+
+  /* Stats panel */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stats-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .stats-card .stats-label {
+    font-size: 0.7rem;
+    color: var(--text-light);
+    margin-bottom: 4px;
+  }
+  .stats-card .stats-value {
+    font-family: 'ZCOOL KuaiLe', cursive;
+    font-size: 1.3rem;
+    color: var(--pink);
+    font-weight: 700;
+  }
+
+  /* Student mode - hide settings */
+  .student-mode .settings-panel,
+  .student-mode .add-rule-btn,
+  .student-mode .level-edit-btn,
+  .student-mode .rule-edit-btn,
+  .student-mode .rule-del-btn,
+  .student-mode .tab-btn-settings { display: none !important; }
+
+  /* Parent badge */
+  .parent-badge {
+    display: none;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 50;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    color: white;
+    border-radius: 15px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    font-family: 'Noto Sans SC', sans-serif;
+  }
+  .parent-mode .parent-badge { display: block; }
+
+  /* Quick actions in rules */
+  .quick-btns-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #eee;
+  }
+  .quick-btn {
+    flex: 1;
+    padding: 6px 4px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Noto Sans SC', sans-serif;
+  }
+  .quick-btn.plus { background: #e8f5e9; color: #2e7d32; }
+  .quick-btn.minus { background: #ffebee; color: #c62828; }
+  .quick-btn:active { transform: scale(0.95); }
+
+  /* Interaction animations */
+  .pet-emoji.interact-head { animation: patHead 0.8s ease-in-out; }
+  .pet-emoji.interact-butt { animation: wiggleButt 0.8s ease-in-out; }
+  .pet-emoji.interact-hug { animation: hugSqueeze 1s ease-in-out; }
+  .pet-emoji.interact-kiss { animation: kissBlush 1s ease-in-out; }
+  @keyframes patHead {
+    0% { transform: translateY(0) scale(1); }
+    20% { transform: translateY(-5px) scale(1.05, 0.95); }
+    40% { transform: translateY(0) scale(0.98, 1.02); }
+    60% { transform: translateY(-3px) scale(1.02, 0.98); }
+    100% { transform: translateY(0) scale(1); }
+  }
+  @keyframes wiggleButt {
+    0% { transform: rotate(0deg) scale(1); }
+    15% { transform: rotate(-12deg) scale(1.05); }
+    30% { transform: rotate(12deg) scale(1.05); }
+    45% { transform: rotate(-8deg) scale(1.03); }
+    60% { transform: rotate(8deg) scale(1.03); }
+    75% { transform: rotate(-3deg) scale(1.01); }
+    100% { transform: rotate(0deg) scale(1); }
+  }
+  @keyframes hugSqueeze {
+    0% { transform: scale(1); }
+    20% { transform: scale(0.85, 1.15); }
+    40% { transform: scale(1.1, 0.9); }
+    60% { transform: scale(0.92, 1.08); }
+    80% { transform: scale(1.04, 0.96); }
+    100% { transform: scale(1); }
+  }
+  @keyframes kissBlush {
+    0% { transform: scale(1); filter: brightness(1); }
+    25% { transform: scale(1.1); filter: brightness(1.2) drop-shadow(0 0 15px #ffb6c1); }
+    50% { transform: scale(0.95); filter: brightness(1.3) drop-shadow(0 0 20px #ff69b4); }
+    75% { transform: scale(1.05); filter: brightness(1.1) drop-shadow(0 0 10px #ffb6c1); }
+    100% { transform: scale(1); filter: brightness(1); }
+  }
+
+  /* Big rule button for student mode */
+  .rule-item-big {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #fafafa, #f5f5f5);
+    border-radius: 16px;
+    border: 2px solid rgba(0,0,0,0.06);
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    text-align: left;
+    font-family: 'Noto Sans SC', sans-serif;
+  }
+  .rule-item-big:hover { background: linear-gradient(135deg, #fff0f5, #fce4ec); border-color: rgba(255,107,157,0.3); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,107,157,0.15); }
+  .rule-item-big:active { transform: scale(0.97); }
+  .rule-item-big .rule-icon { font-size: 1.8rem; flex-shrink: 0; }
+  .rule-item-big .rule-info { flex: 1; min-width: 0; }
+  .rule-item-big .rule-name { font-weight: 700; font-size: 1.05rem; color: var(--text); }
+  .rule-item-big .rule-value { font-size: 0.8rem; color: var(--text-light); margin-top: 2px; }
+  .rule-item-big .rule-value-badge { padding: 6px 14px; border-radius: 12px; font-size: 0.9rem; font-weight: 800; color: white; flex-shrink: 0; }
+</style>
+</head>
+<body class="student-mode">
+
+<!-- Floating particles -->
+<div class="particles" id="particles"></div>
+
+<!-- Parent badge -->
+<div class="parent-badge">家长模式</div>
+
+<!-- Parent mode button -->
+<button class="parent-btn" id="parentBtn" onclick="openParentLogin()">家长入口</button>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Celebration overlay -->
+<div class="celebration-overlay" id="celebration">
+  <div class="celebration-title" id="celebrationTitle">升级啦！</div>
+  <div class="celebration-emoji" id="celebrationEmoji">🐱</div>
+  <div class="celebration-info" id="celebrationInfo"></div>
+  <button class="celebration-btn" onclick="closeCelebration()">太棒了！</button>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- Header -->
+<header>
+  <h1>🐾 喵星乐园</h1>
+  <p id="headerDesc">用积分喂养你的专属小猫宠物</p>
+</header>
+
+<!-- Main container -->
+<div class="container">
+
+  <!-- Pet Stage -->
+  <div class="card pet-stage">
+    <div class="pet-name-display" id="petNameDisplay">小豆</div>
+    <div class="pet-level-badge" id="levelBadge" style="background: var(--mint);">Lv.1 奶猫</div>
+
+    <div class="pet-avatar" id="petAvatar">
+      <div class="hearts" id="hearts"></div>
+      <div class="pet-emoji" id="petEmoji">🐱</div>
+    </div>
+
+    <div class="score-section">
+      <div class="score-item">
+        <div class="score-label">积分</div>
+        <div class="score-value points" id="pointsDisplay">0</div>
+      </div>
+      <div class="score-divider"></div>
+      <div class="score-item">
+        <div class="score-label">当前等级</div>
+        <div class="score-value exp" id="levelDisplay">Lv.1</div>
+      </div>
+    </div>
+
+    <div class="exp-bar-wrap">
+      <div class="exp-bar-label">
+        <span>距离下一级</span>
+        <span id="expProgressText">0 / 100</span>
+      </div>
+      <div class="exp-bar">
+        <div class="exp-bar-fill" id="expBarFill" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Interaction buttons - cute pet interactions -->
+    <div class="quick-actions">
+      <button class="qa-btn interact" onclick="interactPet('head')">
+        <span class="qa-icon">🤚</span>
+        <span>摸头</span>
+      </button>
+      <button class="qa-btn interact" onclick="interactPet('butt')">
+        <span class="qa-icon">🍑</span>
+        <span>摸PP</span>
+      </button>
+      <button class="qa-btn interact" onclick="interactPet('hug')">
+        <span class="qa-icon">🤗</span>
+        <span>抱抱</span>
+      </button>
+      <button class="qa-btn interact" onclick="interactPet('kiss')">
+        <span class="qa-icon">💋</span>
+        <span>亲亲</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('rules')" id="tab-rules">
+      <span class="tab-icon">📋</span>积分规则
+    </button>
+    <button class="tab-btn" onclick="switchTab('levels')" id="tab-levels">
+      <span class="tab-icon">🏆</span>升级规则
+    </button>
+    <button class="tab-btn" onclick="switchTab('stats')" id="tab-stats">
+      <span class="tab-icon">📊</span>统计
+    </button>
+    <button class="tab-btn tab-btn-settings" onclick="switchTab('settings')" id="tab-settings">
+      <span class="tab-icon">⚙️</span>设置
+    </button>
+  </div>
+
+  <div class="tab-panels">
+
+    <!-- Rules panel -->
+    <div class="tab-panel active" id="panel-rules">
+      <div class="card">
+        <div class="section-title" id="rulesTitle"><span class="icon">📋</span>积分规则</div>
+        <div class="rule-list" id="ruleList"></div>
+        <button class="add-rule-btn settings-panel" onclick="openAddRuleModal()">
+          <span>+</span> 添加新规则
+        </button>
+      </div>
+    </div>
+
+    <!-- Levels panel -->
+    <div class="tab-panel" id="panel-levels">
+      <div class="card">
+        <div class="section-title" id="levelsTitle"><span class="icon">🏆</span>升级规则</div>
+        <div class="level-list" id="levelList"></div>
+        <button class="add-rule-btn settings-panel" onclick="openAddLevelModal()" style="margin-top: 12px;">
+          <span>+</span> 添加新等级
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats panel -->
+    <div class="tab-panel" id="panel-stats">
+      <div class="card">
+        <div class="section-title"><span class="icon">📊</span>积分统计</div>
+        <div class="stats-grid">
+          <div class="stats-card">
+            <div class="stats-label">今日</div>
+            <div class="stats-value" id="statsToday">0</div>
+          </div>
+          <div class="stats-card">
+            <div class="stats-label">本月</div>
+            <div class="stats-value" id="statsMonth">0</div>
+          </div>
+          <div class="stats-card">
+            <div class="stats-label">今年</div>
+            <div class="stats-value" id="statsYear">0</div>
+          </div>
+        </div>
+        <div class="section-title" style="margin-top: 16px;"><span class="icon">📝</span>操作日志</div>
+        <div class="log-list" id="logList"></div>
+      </div>
+    </div>
+
+    <!-- Settings panel -->
+    <div class="tab-panel settings-panel" id="panel-settings">
+      <div class="card">
+        <div class="section-title"><span class="icon">⚙️</span>宠物设置</div>
+        <div class="form-group">
+          <label>宠物名字</label>
+          <input type="text" id="petNameInput" placeholder="给小猫取个名字..." maxlength="10" value="小豆">
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;">
+          <button class="modal-btn save" style="flex:1" onclick="savePetName()">保存名字</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title"><span class="icon">🎨</span>选择宠物造型</div>
+        <div class="pet-selector" id="petSelector"></div>
+        <div style="display:flex;gap:10px;margin-top:16px;">
+          <button class="modal-btn save" style="flex:1" onclick="savePetEmoji()">确认造型</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title"><span class="icon">🎯</span>积分操作</div>
+        <div style="display:flex;gap:10px;">
+          <button class="modal-btn save" style="flex:1" onclick="openCustomPointsModal()">自定义积分</button>
+          <button class="modal-btn cancel" style="flex:1" onclick="confirmReset()">重置数据</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title"><span class="icon">🔐</span>家长密码</div>
+        <div style="display:flex;gap:10px;">
+          <button class="modal-btn save" style="flex:1" onclick="changePassword()">修改密码</button>
+          <button class="modal-btn cancel" style="flex:1" onclick="exitParentMode()">退出家长模式</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ====== DATA ======
+const DEFAULT_LEVELS = [
+  { name: '奶猫', emoji: '🐱', color: '#4ECDC4', threshold: 0 },
+  { name: '幼猫', emoji: '🐈', color: '#74b9ff', threshold: 100 },
+  { name: '小猫', emoji: '😺', color: '#a29bfe', threshold: 300 },
+  { name: '成猫', emoji: '😸', color: '#fd79a8', threshold: 600 },
+  { name: '大猫', emoji: '🐆', color: '#fdcb6e', threshold: 1000 },
+  { name: '喵皇', emoji: '🦁', color: '#e17055', threshold: 2000 },
+  { name: '喵神', emoji: '🐯', color: '#ff7675', threshold: 5000 },
+];
+
+const PET_OPTIONS = ['🐱','🐈','🐈‍⬛','😺','😸','😻','🦁','🐯','🐆','🐅','🐾','😽','🙀','😹','🐓','🦊','🐻','🐼','🐨','🐰'];
+
+let state = {
+  points: 0,
+  petName: '小豆',
+  petEmoji: '🐱',
+  rules: [
+    { name: '回答问题', icon: '✅', value: 5 },
+    { name: '早读打卡', icon: '📖', value: 3 },
+    { name: '帮助同学', icon: '🤝', value: 5 },
+    { name: '迟到', icon: '⏰', value: -3 },
+    { name: '打架', icon: '😡', value: -10 },
+    { name: '破坏公物', icon: '💥', value: -15 },
+  ],
+  levels: null,
+  levelIndex: 0,
+  password: null,
+  logs: [],
+  isParentMode: false,
+};
+
+// ====== INIT ======
+function init() {
+  loadState();
+  if (!state.levels) state.levels = JSON.parse(JSON.stringify(DEFAULT_LEVELS));
+  buildPetSelector();
+  renderRules();
+  renderLevels();
+  renderStats();
+  renderLogs();
+  updateDisplay();
+  createParticles();
+  updateModeUI();
+}
+
+// ====== STATE ======
+function loadState() {
+  try {
+    const s = localStorage.getItem('catParadise');
+    if (s) {
+      const parsed = JSON.parse(s);
+      state = { ...state, ...parsed };
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  localStorage.setItem('catParadise', JSON.stringify(state));
+}
+
+// ====== MODE ======
+function updateModeUI() {
+  const body = document.body;
+  const parentBtn = document.getElementById('parentBtn');
+  if (state.isParentMode) {
+    body.classList.remove('student-mode');
+    body.classList.add('parent-mode');
+    parentBtn.textContent = '切换学生';
+    document.getElementById('headerDesc').textContent = '家长管理模式';
+  } else {
+    body.classList.remove('parent-mode');
+    body.classList.add('student-mode');
+    parentBtn.textContent = '家长入口';
+    document.getElementById('headerDesc').textContent = '用积分喂养你的专属小猫宠物';
+  }
+}
+
+function openParentLogin() {
+  if (state.isParentMode) {
+    exitParentMode();
+    return;
+  }
+  
+  if (!state.password) {
+    // First time - set password
+    openModal(`
+      <h3>设置家长密码</h3>
+      <p style="text-align:center;color:#636E72;margin-bottom:16px;font-size:0.85rem;">
+        首次设置密码，用于进入家长管理模式
+      </p>
+      <div class="form-group">
+        <label>输入密码（4-6位数字）</label>
+        <input type="password" id="newPassword" placeholder="请输入密码" maxlength="6">
+      </div>
+      <div class="form-group">
+        <label>确认密码</label>
+        <input type="password" id="confirmPassword" placeholder="再次输入密码" maxlength="6">
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+        <button class="modal-btn save" onclick="setPassword()">确认设置</button>
+      </div>
+    `);
+  } else {
+    // Login
+    openModal(`
+      <h3>家长登录</h3>
+      <p style="text-align:center;color:#636E72;margin-bottom:16px;font-size:0.85rem;">
+        请输入家长密码进入管理模式
+      </p>
+      <div class="form-group">
+        <label>输入密码</label>
+        <input type="password" id="loginPassword" placeholder="请输入密码" maxlength="6">
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+        <button class="modal-btn save" onclick="loginParent()">登录</button>
+      </div>
+    `);
+  }
+}
+
+function setPassword() {
+  const pwd = document.getElementById('newPassword').value.trim();
+  const confirm = document.getElementById('confirmPassword').value.trim();
+  
+  if (!/^\d{4,6}$/.test(pwd)) {
+    showToast('密码必须是4-6位数字');
+    return;
+  }
+  if (pwd !== confirm) {
+    showToast('两次密码不一致');
+    return;
+  }
+  
+  state.password = pwd;
+  state.isParentMode = true;
+  saveState();
+  updateModeUI();
+  closeModal();
+  showToast('密码设置成功！已进入家长模式');
+}
+
+function loginParent() {
+  const pwd = document.getElementById('loginPassword').value.trim();
+  
+  if (pwd === state.password) {
+    state.isParentMode = true;
+    saveState();
+    updateModeUI();
+    closeModal();
+    showToast('登录成功！已进入家长模式');
+  } else {
+    showToast('密码错误');
+  }
+}
+
+function exitParentMode() {
+  state.isParentMode = false;
+  saveState();
+  updateModeUI();
+  switchTab('rules');
+  showToast('已退出家长模式');
+}
+
+function changePassword() {
+  openModal(`
+    <h3>修改密码</h3>
+    <div class="form-group">
+      <label>原密码</label>
+      <input type="password" id="oldPassword" placeholder="请输入原密码" maxlength="6">
+    </div>
+    <div class="form-group">
+      <label>新密码（4-6位数字）</label>
+      <input type="password" id="newPassword2" placeholder="请输入新密码" maxlength="6">
+    </div>
+    <div class="form-group">
+      <label>确认新密码</label>
+      <input type="password" id="confirmPassword2" placeholder="再次输入新密码" maxlength="6">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+      <button class="modal-btn save" onclick="doChangePassword()">确认修改</button>
+    </div>
+  `);
+}
+
+function doChangePassword() {
+  const oldPwd = document.getElementById('oldPassword').value.trim();
+  const newPwd = document.getElementById('newPassword2').value.trim();
+  const confirm = document.getElementById('confirmPassword2').value.trim();
+  
+  if (oldPwd !== state.password) {
+    showToast('原密码错误');
+    return;
+  }
+  if (!/^\d{4,6}$/.test(newPwd)) {
+    showToast('新密码必须是4-6位数字');
+    return;
+  }
+  if (newPwd !== confirm) {
+    showToast('两次密码不一致');
+    return;
+  }
+  
+  state.password = newPwd;
+  saveState();
+  closeModal();
+  showToast('密码修改成功！');
+}
+
+// ====== RENDER ======
+function renderRules() {
+  const el = document.getElementById('ruleList');
+  if (state.isParentMode) {
+    // Parent mode: show edit/delete controls
+    el.innerHTML = state.rules.map((r, i) => `
+      <div class="rule-item">
+        <div class="rule-icon">${r.icon}</div>
+        <div class="rule-info">
+          <div class="rule-name">${r.name}</div>
+          <div class="rule-value">每次 ${r.value > 0 ? '+' : ''}${r.value} 积分</div>
+        </div>
+        <span class="rule-value-badge ${r.value > 0 ? 'badge-plus' : 'badge-minus'}">${r.value > 0 ? '+' : ''}${r.value}</span>
+        <div class="rule-controls">
+          <button class="rule-ctrl-btn trigger" onclick="triggerRule(${i})" title="执行">⚡</button>
+          <button class="rule-ctrl-btn edit rule-edit-btn settings-panel" onclick="openEditRuleModal(${i})">✏️</button>
+          <button class="rule-ctrl-btn del rule-del-btn settings-panel" onclick="deleteRule(${i})">✕</button>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    // Student mode: big button style, whole item clickable
+    el.innerHTML = state.rules.map((r, i) => `
+      <button class="rule-item-big" onclick="triggerRule(${i})">
+        <div class="rule-icon">${r.icon}</div>
+        <div class="rule-info">
+          <div class="rule-name">${r.name}</div>
+          <div class="rule-value">每次 ${r.value > 0 ? '+' : ''}${r.value} 积分</div>
+        </div>
+        <span class="rule-value-badge ${r.value > 0 ? 'badge-plus' : 'badge-minus'}">${r.value > 0 ? '+' : ''}${r.value}</span>
+      </button>
+    `).join('');
+  }
+}
+
+function renderLevels() {
+  const el = document.getElementById('levelList');
+  el.innerHTML = state.levels.map((lv, i) => `
+    <div class="level-item">
+      <div class="lv-badge" style="background:${lv.color}">${lv.emoji}</div>
+      <div class="lv-info">
+        <div class="lv-name">Lv.${i+1} ${lv.name}</div>
+        <div class="lv-threshold">需要 ${lv.threshold} 积分</div>
+      </div>
+      <button class="lv-edit-btn level-edit-btn settings-panel" onclick="openEditLevelModal(${i})">编辑</button>
+    </div>
+  `).join('');
+}
+
+function buildPetSelector() {
+  const el = document.getElementById('petSelector');
+  el.innerHTML = PET_OPTIONS.map(p => `
+    <div class="pet-opt ${p === state.petEmoji ? 'selected' : ''}" onclick="selectPetEmoji('${p}')">${p}</div>
+  `).join('');
+}
+
+function renderStats() {
+  const now = new Date();
+  const today = now.toDateString();
+  const month = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  const year = now.getFullYear();
+  
+  let todayPoints = 0, monthPoints = 0, yearPoints = 0;
+  
+  state.logs.forEach(log => {
+    const logDate = new Date(log.time);
+    if (logDate.toDateString() === today) {
+      todayPoints += log.points;
+    }
+    if (logDate.getFullYear() === now.getFullYear() && logDate.getMonth() === now.getMonth()) {
+      monthPoints += log.points;
+    }
+    if (logDate.getFullYear() === year) {
+      yearPoints += log.points;
+    }
+  });
+  
+  document.getElementById('statsToday').textContent = todayPoints > 0 ? '+' + todayPoints : todayPoints;
+  document.getElementById('statsMonth').textContent = monthPoints > 0 ? '+' + monthPoints : monthPoints;
+  document.getElementById('statsYear').textContent = yearPoints > 0 ? '+' + yearPoints : yearPoints;
+}
+
+function renderLogs() {
+  const el = document.getElementById('logList');
+  if (state.logs.length === 0) {
+    el.innerHTML = '<p style="text-align:center;color:#aaa;font-size:0.85rem;padding:20px;">暂无记录</p>';
+    return;
+  }
+  
+  const sortedLogs = [...state.logs].reverse().slice(0, 50);
+  el.innerHTML = sortedLogs.map(log => {
+    const time = new Date(log.time);
+    const timeStr = time.toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return `
+      <div class="log-item">
+        <span class="log-time">${timeStr}</span>
+        <span class="log-action">${log.action}</span>
+        <span class="log-points ${log.points > 0 ? 'plus' : 'minus'}">${log.points > 0 ? '+' : ''}${log.points}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ====== UPDATE ======
+function updateDisplay() {
+  document.getElementById('petNameDisplay').textContent = state.petName;
+  document.getElementById('petNameInput').value = state.petName;
+  document.getElementById('petEmoji').textContent = state.petEmoji;
+
+  // Level
+  const lvl = getCurrentLevel();
+  state.levelIndex = lvl.index;
+  document.getElementById('levelBadge').textContent = `Lv.${lvl.index+1} ${lvl.name}`;
+  document.getElementById('levelBadge').style.background = lvl.color;
+  document.getElementById('levelDisplay').textContent = `Lv.${lvl.index+1}`;
+  document.getElementById('pointsDisplay').textContent = state.points;
+
+  // EXP bar
+  const nextLv = state.levels[lvl.index + 1];
+  if (nextLv) {
+    const range = nextLv.threshold - lvl.threshold;
+    const progress = Math.min(100, ((state.points - lvl.threshold) / range) * 100);
+    document.getElementById('expBarFill').style.width = progress + '%';
+    document.getElementById('expProgressText').textContent = `${state.points} / ${nextLv.threshold}`;
+  } else {
+    document.getElementById('expBarFill').style.width = '100%';
+    document.getElementById('expProgressText').textContent = `${state.points} / MAX`;
+  }
+
+  document.getElementById('levelBadge').style.color = 'white';
+}
+
+function getCurrentLevel() {
+  let idx = 0;
+  for (let i = state.levels.length - 1; i >= 0; i--) {
+    if (state.points >= state.levels[i].threshold) { idx = i; break; }
+  }
+  return { index: idx, ...state.levels[idx] };
+}
+
+// ====== POINTS ======
+function addPoints(amount, action = '积分调整') {
+  const prevLevel = getCurrentLevel();
+  state.points = Math.max(0, state.points + amount);
+  const newLevel = getCurrentLevel();
+
+  // Add log
+  state.logs.push({
+    time: Date.now(),
+    action: action,
+    points: amount
+  });
+  // Keep only last 500 logs
+  if (state.logs.length > 500) state.logs = state.logs.slice(-500);
+
+  if (amount > 0) {
+    spawnHearts(amount > 10 ? 8 : 4);
+    spawnStars();
+    updatePetMood('happy');
+  } else {
+    updatePetMood('sad');
+  }
+
+  updateDisplay();
+  renderStats();
+  renderLogs();
+  saveState();
+
+  // Level up check
+  if (newLevel.index > prevLevel.index) {
+    setTimeout(() => showCelebration(prevLevel, newLevel), 600);
+  }
+}
+
+function quickAdd(val) { addPoints(Math.abs(val), '快速加分'); showToast(`+${val}分`, 'success'); }
+function quickMinus(val) { addPoints(-Math.abs(val), '快速扣分'); showToast(`-${val}分`, 'warn'); }
+
+// ====== PET INTERACTIONS ======
+function interactPet(type) {
+  const el = document.getElementById('petEmoji');
+  const hearts = document.getElementById('hearts');
+  
+  // Remove any existing interaction class
+  el.classList.remove('interact-head', 'interact-butt', 'interact-hug', 'interact-kiss');
+  // Force reflow
+  void el.offsetWidth;
+  el.classList.add('interact-' + type);
+  
+  // Spawn effects based on type
+  const effectMap = {
+    head: { emojis: ['❤️','💕','✨','💫'], msg: '摸摸头~好舒服喵~' },
+    butt: { emojis: ['🍑','🐾','💕','😳'], msg: '喵?! 别摸那里~' },
+    hug: { emojis: ['🤗','💖','🫂','💗'], msg: '抱抱~好温暖喵~' },
+    kiss: { emojis: ['💋','😘','💖','🌸'], msg: '喵~脸好红~' },
+  };
+  const effect = effectMap[type];
+  
+  // Spawn floating emojis
+  for (let i = 0; i < 6; i++) {
+    setTimeout(() => {
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.textContent = effect.emojis[Math.floor(Math.random() * effect.emojis.length)];
+      h.style.left = (15 + Math.random() * 70) + '%';
+      h.style.top = (20 + Math.random() * 50) + '%';
+      hearts.appendChild(h);
+      setTimeout(() => h.remove(), 1000);
+    }, i * 120);
+  }
+  
+  showToast(effect.msg, 'success');
+  
+  // Remove class after animation
+  setTimeout(() => {
+    el.classList.remove('interact-' + type);
+  }, 1000);
+}
+
+function triggerRule(index) {
+  const rule = state.rules[index];
+  addPoints(rule.value, rule.name);
+  showToast(`${rule.name} ${rule.value > 0 ? '+' : ''}${rule.value}分`, rule.value > 0 ? 'success' : 'warn');
+}
+
+// ====== PET MOOD ======
+function updatePetMood(mood) {
+  const el = document.getElementById('petEmoji');
+  el.className = 'pet-emoji ' + mood;
+  clearTimeout(window._moodTimer);
+  window._moodTimer = setTimeout(() => {
+    el.className = 'pet-emoji';
+  }, 2000);
+}
+
+// ====== EFFECTS ======
+function spawnHearts(count) {
+  const container = document.getElementById('hearts');
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.textContent = ['❤️','🧡','💛','💚','💙','💜'][Math.floor(Math.random()*6)];
+      h.style.left = (20 + Math.random() * 60) + '%';
+      h.style.top = (30 + Math.random() * 40) + '%';
+      container.appendChild(h);
+      setTimeout(() => h.remove(), 1000);
+    }, i * 100);
+  }
+}
+
+function spawnStars() {
+  const el = document.getElementById('petEmoji');
+  for (let i = 0; i < 6; i++) {
+    setTimeout(() => {
+      const s = document.createElement('div');
+      s.className = 'star';
+      s.textContent = '✨';
+      s.style.left = (20 + Math.random() * 60) + '%';
+      s.style.top = (20 + Math.random() * 60) + '%';
+      s.style.setProperty('--tx', (Math.random()-0.5)*120+'px');
+      s.style.setProperty('--ty', (Math.random()-0.5)*120+'px');
+      el.parentElement.appendChild(s);
+      setTimeout(() => s.remove(), 1000);
+    }, i * 80);
+  }
+}
+
+function createParticles() {
+  const c = document.getElementById('particles');
+  const colors = ['#FF6B9D','#4ECDC4','#FFE66D','#C77DFF','#74b9ff'];
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'p';
+    const size = 6 + Math.random() * 12;
+    p.style.width = p.style.height = size + 'px';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.animationDuration = (8 + Math.random() * 12) + 's';
+    p.style.animationDelay = (Math.random() * 10) + 's';
+    c.appendChild(p);
+  }
+}
+
+// ====== CELEBRATION ======
+function showCelebration(prev, next) {
+  const overlay = document.getElementById('celebration');
+  document.getElementById('celebrationTitle').textContent = `${prev.name} → ${next.name}`;
+  document.getElementById('celebrationEmoji').textContent = next.emoji;
+  document.getElementById('celebrationInfo').textContent = `恭喜！${state.petName} 升级为 ${next.name}！`;
+  overlay.classList.add('active');
+
+  const petEl = document.getElementById('petEmoji');
+  petEl.classList.add('level-up');
+  setTimeout(() => petEl.classList.remove('level-up'), 1000);
+}
+
+function closeCelebration() {
+  document.getElementById('celebration').classList.remove('active');
+}
+
+// ====== TOAST ======
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ====== MODAL ======
+function openModal(html) {
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+function closeModalOnOverlay(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+// ====== RULE MODALS ======
+function openAddRuleModal() {
+  openModal(`
+    <h3>+ 添加新规则</h3>
+    <div class="form-group">
+      <label>规则名称</label>
+      <input type="text" id="ruleName" placeholder="例如：回答问题" maxlength="15">
+    </div>
+    <div class="form-group">
+      <label>规则图标</label>
+      <input type="text" id="ruleIcon" placeholder="输入emoji，如 ✅" maxlength="4">
+    </div>
+    <div class="form-group">
+      <label>积分值（正数加分，负数扣分）</label>
+      <input type="number" id="ruleValue" placeholder="-10 ~ 20" value="5">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+      <button class="modal-btn save" onclick="saveNewRule()">保存</button>
+    </div>
+  `);
+}
+
+function saveNewRule() {
+  const name = document.getElementById('ruleName').value.trim();
+  const icon = document.getElementById('ruleIcon').value.trim() || '📌';
+  const value = parseInt(document.getElementById('ruleValue').value) || 0;
+  if (!name) { showToast('请输入规则名称'); return; }
+  state.rules.push({ name, icon, value });
+  renderRules();
+  saveState();
+  closeModal();
+  showToast(`规则「${name}」添加成功！`);
+}
+
+function openEditRuleModal(index) {
+  const rule = state.rules[index];
+  openModal(`
+    <h3>编辑规则</h3>
+    <div class="form-group">
+      <label>规则名称</label>
+      <input type="text" id="ruleName" value="${rule.name}" maxlength="15">
+    </div>
+    <div class="form-group">
+      <label>规则图标</label>
+      <input type="text" id="ruleIcon" value="${rule.icon}" maxlength="4">
+    </div>
+    <div class="form-group">
+      <label>积分值</label>
+      <input type="number" id="ruleValue" value="${rule.value}">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+      <button class="modal-btn save" onclick="saveEditRule(${index})">保存</button>
+    </div>
+  `);
+}
+
+function saveEditRule(index) {
+  state.rules[index] = {
+    name: document.getElementById('ruleName').value.trim() || state.rules[index].name,
+    icon: document.getElementById('ruleIcon').value.trim() || state.rules[index].icon,
+    value: parseInt(document.getElementById('ruleValue').value) || state.rules[index].value,
+  };
+  renderRules();
+  saveState();
+  closeModal();
+  showToast('规则更新成功！');
+}
+
+function deleteRule(index) {
+  const name = state.rules[index].name;
+  state.rules.splice(index, 1);
+  renderRules();
+  saveState();
+  showToast(`规则「${name}」已删除`);
+}
+
+// ====== LEVEL MODALS ======
+function openAddLevelModal() {
+  const nextNum = state.levels.length + 1;
+  openModal(`
+    <h3>+ 添加新等级</h3>
+    <div class="form-group">
+      <label>等级名称</label>
+      <input type="text" id="lvName" placeholder="例如：超级喵" maxlength="10">
+    </div>
+    <div class="form-group">
+      <label>宠物造型 Emoji</label>
+      <input type="text" id="lvEmoji" placeholder="如 🐲" maxlength="4">
+    </div>
+    <div class="form-group">
+      <label>等级颜色（英文或hex）</label>
+      <input type="text" id="lvColor" placeholder="#FF6B9D" value="#FF6B9D">
+    </div>
+    <div class="form-group">
+      <label>所需积分阈值</label>
+      <input type="number" id="lvThreshold" placeholder="如 1000" value="${(state.levels[state.levels.length-1]?.threshold || 0) + 500}">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+      <button class="modal-btn save" onclick="saveNewLevel()">保存</button>
+    </div>
+  `);
+}
+
+function saveNewLevel() {
+  const name = document.getElementById('lvName').value.trim() || '新等级';
+  const emoji = document.getElementById('lvEmoji').value.trim() || '🐱';
+  const color = document.getElementById('lvColor').value.trim() || '#FF6B9D';
+  const threshold = parseInt(document.getElementById('lvThreshold').value) || 0;
+  state.levels.push({ name, emoji, color, threshold });
+  state.levels.sort((a,b) => a.threshold - b.threshold);
+  renderLevels();
+  renderRules();
+  saveState();
+  closeModal();
+  showToast(`等级「${name}」添加成功！`);
+}
+
+function openEditLevelModal(index) {
+  const lv = state.levels[index];
+  openModal(`
+    <h3>编辑等级</h3>
+    <div class="form-group">
+      <label>等级名称</label>
+      <input type="text" id="lvName" value="${lv.name}" maxlength="10">
+    </div>
+    <div class="form-group">
+      <label>宠物造型 Emoji</label>
+      <input type="text" id="lvEmoji" value="${lv.emoji}" maxlength="4">
+    </div>
+    <div class="form-group">
+      <label>颜色</label>
+      <input type="text" id="lvColor" value="${lv.color}">
+    </div>
+    <div class="form-group">
+      <label>所需积分</label>
+      <input type="number" id="lvThreshold" value="${lv.threshold}">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+      <button class="modal-btn save" onclick="saveEditLevel(${index})">保存</button>
+    </div>
+  `);
+}
+
+function saveEditLevel(index) {
+  state.levels[index] = {
+    name: document.getElementById('lvName').value.trim() || state.levels[index].name,
+    emoji: document.getElementById('lvEmoji').value.trim() || state.levels[index].emoji,
+    color: document.getElementById('lvColor').value.trim() || state.levels[index].color,
+    threshold: parseInt(document.getElementById('lvThreshold').value) || state.levels[index].threshold,
+  };
+  state.levels.sort((a,b) => a.threshold - b.threshold);
+  renderLevels();
+  updateDisplay();
+  saveState();
+  closeModal();
+  showToast('等级更新成功！');
+}
+
+// ====== SETTINGS ======
+function savePetName() {
+  const name = document.getElementById('petNameInput').value.trim();
+  if (!name) { showToast('名字不能为空'); return; }
+  state.petName = name;
+  updateDisplay();
+  saveState();
+  showToast('名字已保存！');
+}
+
+let selectedPetEmoji = state.petEmoji;
+function selectPetEmoji(emoji) {
+  selectedPetEmoji = emoji;
+  document.querySelectorAll('.pet-opt').forEach(el => {
+    el.classList.toggle('selected', el.textContent === emoji);
+  });
+}
+
+function savePetEmoji() {
+  state.petEmoji = selectedPetEmoji;
+  updateDisplay();
+  saveState();
+  showToast('造型已更换！');
+  const petEl = document.getElementById('petEmoji');
+  petEl.classList.add('level-up');
+  setTimeout(() => petEl.classList.remove('level-up'), 1000);
+}
+
+function openCustomPointsModal() {
+  openModal(`
+    <h3>自定义积分</h3>
+    <div class="form-group">
+      <label>输入积分（正数加分，负数扣分）</label>
+      <input type="number" id="customPoints" placeholder="-100 ~ 100" value="0">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+      <button class="modal-btn save" onclick="applyCustomPoints()">确认</button>
+    </div>
+  `);
+}
+
+function applyCustomPoints() {
+  const val = parseInt(document.getElementById('customPoints').value) || 0;
+  addPoints(val, '自定义调整');
+  closeModal();
+  showToast(`积分 ${val > 0 ? '+' : ''}${val}`);
+}
+
+function confirmReset() {
+  openModal(`
+    <h3>确认重置？</h3>
+    <p style="text-align:center;color:#636E72;margin-bottom:20px;font-size:0.9rem;">
+      这将清空所有积分和规则数据，此操作不可撤销！
+    </p>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+      <button class="modal-btn save" style="background: linear-gradient(135deg, #e17055, #d63031);" onclick="doReset()">确认重置</button>
+    </div>
+  `);
+}
+
+function doReset() {
+  const savedPassword = state.password;
+  localStorage.removeItem('catParadise');
+  state = {
+    points: 0, petName: '小豆', petEmoji: '🐱',
+    rules: [
+      { name: '回答问题', icon: '✅', value: 5 },
+      { name: '早读打卡', icon: '📖', value: 3 },
+      { name: '帮助同学', icon: '🤝', value: 5 },
+      { name: '迟到', icon: '⏰', value: -3 },
+      { name: '打架', icon: '😡', value: -10 },
+      { name: '破坏公物', icon: '💥', value: -15 },
+    ],
+    levels: JSON.parse(JSON.stringify(DEFAULT_LEVELS)),
+    levelIndex: 0,
+    password: savedPassword,
+    logs: [],
+    isParentMode: false,
+  };
+  renderRules();
+  renderLevels();
+  buildPetSelector();
+  updateDisplay();
+  renderStats();
+  renderLogs();
+  saveState();
+  updateModeUI();
+  closeModal();
+  showToast('数据已重置！');
+}
+
+// ====== TABS ======
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+  
+  if (name === 'stats') {
+    renderStats();
+    renderLogs();
+  }
+}
+
+// Start
+init();
+</script>
+</body>
+</html>
