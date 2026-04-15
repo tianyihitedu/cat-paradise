@@ -1254,6 +1254,8 @@ function setPassword() {
   state.isParentMode = true;
   saveState();
   updateModeUI();
+  renderRules();
+  renderLevels();
   closeModal();
   showToast('密码设置成功！已进入家长模式');
 }
@@ -1265,6 +1267,8 @@ function loginParent() {
     state.isParentMode = true;
     saveState();
     updateModeUI();
+    renderRules();
+    renderLevels();
     closeModal();
     showToast('登录成功！已进入家长模式');
   } else {
@@ -1276,6 +1280,8 @@ function exitParentMode() {
   state.isParentMode = false;
   saveState();
   updateModeUI();
+  renderRules();
+  renderLevels();
   switchTab('rules');
   showToast('已退出家长模式');
 }
