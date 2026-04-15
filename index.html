@@ -813,6 +813,89 @@
     100% { transform: scale(1); filter: brightness(1); }
   }
 
+  /* Parent mode - inline editable rules */
+  .rule-item.rule-editable {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #f8f9ff, #f5f0ff);
+    border: 2px solid rgba(199,125,255,0.2);
+  }
+  .rule-item.rule-editable:hover {
+    border-color: rgba(199,125,255,0.5);
+    box-shadow: 0 2px 12px rgba(199,125,255,0.15);
+  }
+  .rule-icon-editable {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: 10px;
+    border: 1.5px solid #eee;
+  }
+  .rule-info-editable {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .rule-input-name {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1.5px solid #e0d0f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'Noto Sans SC', sans-serif;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .rule-input-name:focus { border-color: var(--purple); }
+  .rule-edit-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .rule-input-icon {
+    width: 48px;
+    padding: 4px 6px;
+    border: 1.5px solid #e0d0f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    text-align: center;
+    font-family: 'Noto Sans SC', sans-serif;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .rule-input-icon:focus { border-color: var(--purple); }
+  .rule-input-value {
+    width: 64px;
+    padding: 4px 8px;
+    border: 1.5px solid #e0d0f0;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    font-family: 'Noto Sans SC', sans-serif;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .rule-input-value:focus { border-color: var(--purple); }
+  .rule-ctrl-btn.save-small {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+  .rule-ctrl-btn.save-small:hover { background: #c8e6c9; }
+
   /* Big rule button for student mode */
   .rule-item-big {
     display: flex;
@@ -1247,18 +1330,21 @@ function doChangePassword() {
 function renderRules() {
   const el = document.getElementById('ruleList');
   if (state.isParentMode) {
-    // Parent mode: show edit/delete controls
+    // Parent mode: inline editable rules
     el.innerHTML = state.rules.map((r, i) => `
-      <div class="rule-item">
-        <div class="rule-icon">${r.icon}</div>
-        <div class="rule-info">
-          <div class="rule-name">${r.name}</div>
-          <div class="rule-value">每次 ${r.value > 0 ? '+' : ''}${r.value} 积分</div>
+      <div class="rule-item rule-editable">
+        <div class="rule-icon-editable">${r.icon}</div>
+        <div class="rule-info-editable">
+          <input type="text" class="rule-input-name" value="${r.name}" data-index="${i}" maxlength="15" placeholder="规则名称">
+          <div class="rule-edit-row">
+            <input type="text" class="rule-input-icon" value="${r.icon}" data-index="${i}" maxlength="4" placeholder="图标">
+            <input type="number" class="rule-input-value" value="${r.value}" data-index="${i}" placeholder="积分">
+            <span class="rule-value-badge ${r.value > 0 ? 'badge-plus' : 'badge-minus'}">${r.value > 0 ? '+' : ''}${r.value}</span>
+          </div>
         </div>
-        <span class="rule-value-badge ${r.value > 0 ? 'badge-plus' : 'badge-minus'}">${r.value > 0 ? '+' : ''}${r.value}</span>
         <div class="rule-controls">
           <button class="rule-ctrl-btn trigger" onclick="triggerRule(${i})" title="执行">⚡</button>
-          <button class="rule-ctrl-btn edit rule-edit-btn settings-panel" onclick="openEditRuleModal(${i})">✏️</button>
+          <button class="rule-ctrl-btn save-small" onclick="saveInlineRule(${i})" title="保存">💾</button>
           <button class="rule-ctrl-btn del rule-del-btn settings-panel" onclick="deleteRule(${i})">✕</button>
         </div>
       </div>
@@ -1639,6 +1725,23 @@ function deleteRule(index) {
   renderRules();
   saveState();
   showToast(`规则「${name}」已删除`);
+}
+
+function saveInlineRule(index) {
+  const nameInput = document.querySelector(`.rule-input-name[data-index="${index}"]`);
+  const iconInput = document.querySelector(`.rule-input-icon[data-index="${index}"]`);
+  const valueInput = document.querySelector(`.rule-input-value[data-index="${index}"]`);
+  
+  const name = nameInput ? nameInput.value.trim() : state.rules[index].name;
+  const icon = iconInput ? iconInput.value.trim() : state.rules[index].icon;
+  const value = valueInput ? parseInt(valueInput.value) : state.rules[index].value;
+  
+  if (!name) { showToast('规则名称不能为空'); return; }
+  
+  state.rules[index] = { name, icon: icon || '📌', value: value || 0 };
+  renderRules();
+  saveState();
+  showToast(`规则「${name}」已保存！`);
 }
 
 // ====== LEVEL MODALS ======
